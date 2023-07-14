@@ -62,23 +62,30 @@ var (
 )
 
 // center first_content toolbar
-func initContent_toolbar() fyne.CanvasObject {
+func initFirstContent_toolbar() fyne.CanvasObject {
 	_bname := NewCustomToolBarLabelItem("")
 	_bname.SetBinding(content_toolbar_BatchNameString)
 	_bthresh := NewCustomToolBarLabelItem("")
 	_bthresh.SetBinding(content_toolbar_BatchThresholdString)
 	_bprecision := NewCustomToolBarLabelItem("")
 	_bprecision.SetBinding(content_toolbar_BatchPrecisionString)
-	first_content_toolbar = widget.NewToolbar(_bname, widget.NewToolbarSpacer(), _bprecision, widget.NewToolbarSpacer(), _bthresh)
+	first_content_toolbar = widget.NewToolbar(
+		_bname,
+		widget.NewToolbarSpacer(),
+		_bprecision, widget.NewToolbarSpacer(),
+		_bthresh,
+	)
 	return first_content_toolbar
 }
 
 // center second_content_toolbar
-func initSecondContentToolbar() fyne.CanvasObject {
+func initSecondContent_toolbar() fyne.CanvasObject {
 	_no_of_nodes := NewCustomToolBarLabelItem("")
 	_no_of_nodes.SetBinding(content_toolbar_no_of_nodes_string)
 
-	content_toolbar_add_nodes = NewCustomToolbarButtonItem("Add", theme.ContentAddIcon(), nil)
+	content_toolbar_add_nodes = NewCustomToolbarButtonItem("Add", theme.ContentAddIcon(), func() {
+		init_new_node_window()
+	})
 	content_toolbar_add_nodes.SetDisable(true)
 	content_toolbar_add_nodes.SetNormalPriority()
 	second_content_toolbar = widget.NewToolbar(
@@ -91,10 +98,8 @@ func initSecondContentToolbar() fyne.CanvasObject {
 }
 
 func initContents() {
-	initContent_toolbar()
-	initSecondContentToolbar()
 	setMainWindowContent()
-	setTopContent()
+	set_TopToolbar()
 
 }
 
@@ -106,6 +111,8 @@ func mainContent() fyne.CanvasObject {
 
 // Sets the main window Content
 func setMainWindowContent() fyne.CanvasObject {
+	initFirstContent_toolbar()
+	initSecondContent_toolbar()
 	content = container.NewVBox(
 		first_content_toolbar,
 		second_content_toolbar,
@@ -115,10 +122,11 @@ func setMainWindowContent() fyne.CanvasObject {
 
 }
 
-func setTopContent() fyne.CanvasObject {
+func set_TopToolbar() fyne.CanvasObject {
 	// define save top bar toolbar
 	topbar_save = NewCustomToolbarButtonItem("", theme.DocumentSaveIcon(), nil)
 	topbar_save.SetNormalPriority()
+	topbar_save.SetDisable(true)
 	// define new top bar toolbar
 	topbar_new = NewCustomToolbarButtonItem("", theme.FolderNewIcon(), func() {
 		topbar_save.SetNormalPriority()

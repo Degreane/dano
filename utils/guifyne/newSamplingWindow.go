@@ -87,9 +87,12 @@ func _drawFormEntry() fyne.CanvasObject {
 			content_toolbar_BatchThreshold.Set(_batch_thresh)
 			mainWindowBatchSet.Set(true)
 
+			// manipulate main window toolbars and buttons
 			// enabling high priority marks on gadgets in main window
 			topbar_save.SetHighPriority()
 			topbar_save.Settext("*")
+			topbar_save.SetDisable(false)
+			content_toolbar_add_nodes.SetDisable(false)
 			//
 			newSamplingWindow.Close()
 		}
