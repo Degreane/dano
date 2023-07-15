@@ -26,7 +26,12 @@ func renderMainWindow() error {
 				Spacing:   layout.SpaceEnd,
 				Alignment: layout.Start,
 			}.Layout(gtx,
-				renderTopBar(et, gtx),
+				layout.Rigid(
+					func(gtx layout.Context) layout.Dimensions {
+						return renderNewToolbar(gtx, th)
+					},
+				),
+				// renderTopBar(et, gtx),
 				layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
 					return layout.Dimensions{
 						Size: gtx.Constraints.Min,

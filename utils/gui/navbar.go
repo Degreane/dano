@@ -3,6 +3,7 @@ package gui
 import (
 	"image"
 	"image/color"
+	"log"
 
 	"gioui.org/font/gofont"
 	"gioui.org/io/system"
@@ -24,6 +25,7 @@ var (
 	saveBtnStyle material.ButtonStyle
 	quitBtnState widget.Clickable
 	quitBtnStyle material.ButtonStyle
+	chkbox       widget.Bool
 	// ops are the operations from the UI
 	ops op.Ops
 )
@@ -105,4 +107,23 @@ func renderTopBar(et system.FrameEvent, gtx layout.Context) layout.FlexChild {
 		go newSamplingGUI()
 	}
 	return r2
+}
+func renderNewToolbar(gtx layout.Context, th *material.Theme) layout.Dimensions {
+	tb := NewToolbar()
+	tbItem1 := NewToolbarItem[widget.Clickable](&newBtnState, "New")
+	tbItem2 := NewToolbarItem[widget.Clickable](&loadBtnState, "Load")
+	tbItem3 := NewToolbarItem[widget.Clickable](&saveBtnState, "Save")
+	tbItem4 := NewToolbarItem[widget.Label](&widget.Label{}, "label Widget")
+
+	chkboxS := material.CheckBox(th, &chkbox, "Auto")
+
+	tbItem5 := NewToolbarItem[material.CheckBoxStyle](&chkboxS, "Auto")
+	tb.Add(tbItem1).Add(tbItem2).Add(tbItem3).Add(tbItem4).Add(tbItem5)
+	if saveBtnState.Clicked() {
+		log.Println("Save Clicked")
+	}
+	if chkbox.Changed() {
+		log.Println("Log Changed")
+	}
+	return tb.render(gtx, th)
 }
