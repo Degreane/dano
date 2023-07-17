@@ -14,6 +14,7 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
+	"github.com/degreane/dano/utils/binding"
 )
 
 var (
@@ -28,6 +29,8 @@ var (
 	chkbox       widget.Bool
 	// ops are the operations from the UI
 	ops op.Ops
+	// test binding
+	b1 binding.String = binding.NewString()
 )
 
 func renderTopBar(et system.FrameEvent, gtx layout.Context) layout.FlexChild {
@@ -113,14 +116,18 @@ func renderNewToolbar(gtx layout.Context, th *material.Theme) layout.Dimensions 
 	tbItem1 := NewToolbarItem[widget.Clickable](&newBtnState, "New")
 	tbItem2 := NewToolbarItem[widget.Clickable](&loadBtnState, "Load")
 	tbItem3 := NewToolbarItem[widget.Clickable](&saveBtnState, "Save")
-	tbItem4 := NewToolbarItem[widget.Label](&widget.Label{}, "label Widget")
+	tbItem4 := NewToolbarItem[widget.Label](&widget.Label{}, "label Item4")
+	tbItem4.Bind(b1)
+	tbItem6 := NewToolbarItem[widget.Label](&widget.Label{}, "label Item6")
+	tbItem6.Bind(b1)
 
 	chkboxS := material.CheckBox(th, &chkbox, "Auto")
 
 	tbItem5 := NewToolbarItem[material.CheckBoxStyle](&chkboxS, "Auto")
-	tb.Add(tbItem1).Add(tbItem2).Add(tbItem3).Add(tbItem4).Add(tbItem5)
+	tb.Add(tbItem1).Add(tbItem2).Add(tbItem3).Add(tbItem4).Add(tbItem5).Add(tbItem6)
 	if saveBtnState.Clicked() {
 		log.Println("Save Clicked")
+		b1.Set("Welcome B1")
 	}
 	if chkbox.Changed() {
 		log.Println("Log Changed")

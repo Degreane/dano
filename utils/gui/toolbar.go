@@ -3,6 +3,8 @@ package gui
 import (
 	"image"
 	"image/color"
+	"log"
+	"math/rand"
 	"reflect"
 
 	"gioui.org/layout"
@@ -11,6 +13,8 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
+	"github.com/degreane/dano/utils/binding"
+	"github.com/degreane/dano/utils/names"
 )
 
 type ToolbarItemType interface {
@@ -18,18 +22,41 @@ type ToolbarItemType interface {
 }
 
 type ToolBarItem struct {
+	Id       string
 	Type     interface{}
 	Text     string
 	Disabled bool
+	Bound    binding.Boundable
 }
 
 func NewToolbarItem[T ToolbarItemType](w *T, txt string) *ToolBarItem {
-
+	Id := rand.Intn(100000000)
+	IdStr := names.GetName(Id, "")
 	return &ToolBarItem{
+		Id:       IdStr,
 		Type:     w,
 		Text:     txt,
-		Disabled: true,
+		Disabled: false,
 	}
+}
+
+func (t *ToolBarItem) Disable() *ToolBarItem {
+	t.Disabled = true
+	return t
+}
+func (t *ToolBarItem) Enable() *ToolBarItem {
+	t.Disabled = false
+	return t
+}
+func (t *ToolBarItem) ToggleState() *ToolBarItem {
+	t.Disabled = !t.Disabled
+	return t
+}
+func (t *ToolBarItem) Bind(b binding.String) {
+	t.Bound = binding.NewBound(t, func() {
+		log.Printf("A New Boundable of Widget %+v bound to value %s\n", t.Text, b.TryGet())
+	})
+	b.Register(t)
 }
 
 type ToolBar struct {
@@ -139,6 +166,12 @@ func (tb *ToolBar) render(gtx layout.Context, th *material.Theme) layout.Dimensi
 								v, _ := tbi.Type.(*material.CheckBoxStyle)
 								flexitems = append(flexitems, layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 									return layout.Inset{Top: 1, Bottom: 1, Left: 1, Right: 1}.Layout(gtx, v.Layout)
+								}))
+							case reflect.TypeOf(&widget.Label{}):
+								// v, _ := tbi.Type.(*widget.Label)
+								mat := material.Label(th, unit.Sp(12), tb.Items[i].Text)
+								flexitems = append(flexitems, layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+									return layout.Inset{Top: 1, Bottom: 1, Left: 1, Right: 1}.Layout(gtx, mat.Layout)
 								}))
 							default:
 								flexitems = append(flexitems, layout.Rigid(func(gtx layout.Context) layout.Dimensions {
