@@ -18,6 +18,6 @@ func main() {
 	fmt.Println(utils.GetName(18000, ""))
 
 	duration := time.Since(start)
-	fmt.Printf("Took %+v", duration)
+	fmt.Printf("Took %+v\n", duration)
 	utils.RunGUI()
 }

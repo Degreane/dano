@@ -1,7 +1,6 @@
 package gui
 
 import (
-	"gioui.org/font/gofont"
 	"gioui.org/io/system"
 	"gioui.org/layout"
 	"gioui.org/unit"
@@ -14,7 +13,7 @@ func renderMainWindow() error {
 	// startButton is a clickable widget
 	var startButton widget.Clickable
 	// th defines the material design style
-	th := material.NewTheme(gofont.Collection())
+	th := theme
 	var btn material.ButtonStyle = material.Button(th, &startButton, "ClickMe")
 
 	for e := range w.Events() {
@@ -31,7 +30,11 @@ func renderMainWindow() error {
 						return renderNewToolbar(gtx, th)
 					},
 				),
-				// renderTopBar(et, gtx),
+				layout.Rigid(
+					func(gtx layout.Context) layout.Dimensions {
+						return renderSecondToolbar(gtx, th)
+					},
+				),
 				layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
 					return layout.Dimensions{
 						Size: gtx.Constraints.Min,

@@ -11,11 +11,13 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
+	"github.com/degreane/dano/utils/binding"
 )
 
 var (
-	newSamplingWindowDisplayed bool      = false
-	newSamplingWindowDone      chan bool = make(chan bool, 1)
+	newSamplingWindowDisplayed bool            = false
+	newSamplingWindowDone      chan bool       = make(chan bool, 1)
+	newSamplinWindowBinding    binding.Boolean = binding.NewBoolean()
 )
 
 func formField(gtx layout.Context, label string, field material.EditorStyle, opts ...map[string]string) layout.Dimensions {
@@ -91,63 +93,28 @@ func formField(gtx layout.Context, label string, field material.EditorStyle, opt
 }
 
 func newSamplingGUI() {
-	if !newSamplingWindowDisplayed {
-		newSamplingWindowDisplayed = !newSamplingWindowDisplayed
+	if !newSamplinWindowBinding.TryGet() {
+		newSamplinWindowBinding.Set(true)
 		var samplingWindowOps *op.Ops = new(op.Ops)
 		samplingWindowOps.Reset()
+		newSamplinWindowBinding.AddListener(func() {
+			if !newSamplinWindowBinding.TryGet() {
+				tbItemNew.Enable()
+				w.Invalidate()
+			} else {
+				tbItemNew.Disable()
+			}
+		})
 
-		go func(newSamplingWindowDone chan bool) {
+		go func() {
 			newSamplingWindow := app.NewWindow(
 				app.Title("New Sample"),
 				app.Size(unit.Dp(600), unit.Dp(400)),
 			)
 			// define the fields we need:
 			var (
-				// // 1- Sampling Name
-				// _newSamplingName *component.TextField = new(component.TextField)
-				// // 2- Sampling Info
-				// _newSamplingInfo *component.TextField = new(component.TextField)
-				// // 3- sampling Threshold
-				// _newSamplingThreshold *component.TextField = new(component.TextField)
-				// // 4- sampling Precision
-				// _newSamplingPrecision *component.TextField = new(component.TextField)
-				// // 5- my own implementation
-				// _field *Field = new(Field)
-				// 6- my own form implementation
-				_form *Form = NewForm()
+				_form *Form = NewForm("NewBatch")
 			)
-			_form.SetName("New Tempo Form ")
-			_form.SetType(FormHorizontal)
-			_form.AddField(&Field{
-				Label:        "Field 1",
-				Type:         InputText,
-				DefaultValue: "F1",
-				Name:         "Name Of Field 1",
-				TextSize:     int(16),
-			})
-			_form.AddField(&Field{
-				Label:        "Field 2",
-				Type:         InputText,
-				DefaultValue: "F2",
-				Name:         "Name Of Field 2",
-				TextSize:     int(16),
-			})
-
-			// _newSamplingName.Alignment = text.Middle
-			// _newSamplingName.Editor.SingleLine = true
-			// _newSamplingName.Helper = " Sampling Name "
-
-			// _newSamplingInfo.Editor.SingleLine = false
-			// _newSamplingInfo.Helper = " Info "
-
-			// _newSamplingThreshold.Editor.SingleLine = true
-			// _newSamplingThreshold.Alignment = text.Middle
-			// _newSamplingThreshold.Filter = "0123456789."
-			// _newSamplingThreshold.InputHint = key.HintNumeric
-
-			// _newSamplingPrecision.Alignment = text.Middle
-			// _newSamplingPrecision.Filter = "0123456789"
-			// _newSamplingPrecision.InputHint = key.HintNumeric
 
 			for windowEvent := range newSamplingWindow.Events() {
 
@@ -160,18 +127,101 @@ func newSamplingGUI() {
 					}.Layout(
 						samplingWindowGtx,
 						layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-							return _form.Layout(gtx, theme)
+							return _form.render(gtx)
 						}),
 					)
 					windowEventType.Frame(samplingWindowGtx.Ops)
 				case system.DestroyEvent:
-					newSamplingWindowDone <- false
+
+					newSamplinWindowBinding.Set(false)
 
 				}
 			}
-		}(newSamplingWindowDone)
-		newSamplingWindowDisplayed = <-newSamplingWindowDone
+		}()
 	}
+	// if !newSamplingWindowDisplayed {
+	// 	newSamplingWindowDisplayed = !newSamplingWindowDisplayed
+	// 	var samplingWindowOps *op.Ops = new(op.Ops)
+	// 	samplingWindowOps.Reset()
+
+	// 	go func(newSamplingWindowDone chan bool) {
+	// 		newSamplingWindow := app.NewWindow(
+	// 			app.Title("New Sample"),
+	// 			app.Size(unit.Dp(600), unit.Dp(400)),
+	// 		)
+	// 		// define the fields we need:
+	// 		var (
+	// 			// // 1- Sampling Name
+	// 			// _newSamplingName *component.TextField = new(component.TextField)
+	// 			// // 2- Sampling Info
+	// 			// _newSamplingInfo *component.TextField = new(component.TextField)
+	// 			// // 3- sampling Threshold
+	// 			// _newSamplingThreshold *component.TextField = new(component.TextField)
+	// 			// // 4- sampling Precision
+	// 			// _newSamplingPrecision *component.TextField = new(component.TextField)
+	// 			// // 5- my own implementation
+	// 			// _field *Field = new(Field)
+	// 			// 6- my own form implementation
+	// 			_form *Form = NewForm("NewBatch")
+	// 		)
+	// 		// _form.SetName("New Tempo Form ")
+	// 		// _form.SetType(FormHorizontal)
+	// 		// _form.AddField(&Field{
+	// 		// 	Label:        "Field 1",
+	// 		// 	Type:         InputText,
+	// 		// 	DefaultValue: "F1",
+	// 		// 	Name:         "Name Of Field 1",
+	// 		// 	TextSize:     int(16),
+	// 		// })
+	// 		// _form.AddField(&Field{
+	// 		// 	Label:        "Field 2",
+	// 		// 	Type:         InputText,
+	// 		// 	DefaultValue: "F2",
+	// 		// 	Name:         "Name Of Field 2",
+	// 		// 	TextSize:     int(16),
+	// 		// })
+
+	// 		// _newSamplingName.Alignment = text.Middle
+	// 		// _newSamplingName.Editor.SingleLine = true
+	// 		// _newSamplingName.Helper = " Sampling Name "
+
+	// 		// _newSamplingInfo.Editor.SingleLine = false
+	// 		// _newSamplingInfo.Helper = " Info "
+
+	// 		// _newSamplingThreshold.Editor.SingleLine = true
+	// 		// _newSamplingThreshold.Alignment = text.Middle
+	// 		// _newSamplingThreshold.Filter = "0123456789."
+	// 		// _newSamplingThreshold.InputHint = key.HintNumeric
+
+	// 		// _newSamplingPrecision.Alignment = text.Middle
+	// 		// _newSamplingPrecision.Filter = "0123456789"
+	// 		// _newSamplingPrecision.InputHint = key.HintNumeric
+
+	// 		for windowEvent := range newSamplingWindow.Events() {
+
+	// 			switch windowEventType := windowEvent.(type) {
+	// 			case system.FrameEvent:
+	// 				samplingWindowGtx := layout.NewContext(samplingWindowOps, windowEventType)
+	// 				layout.Flex{
+	// 					Axis:    layout.Vertical,
+	// 					Spacing: layout.SpaceEnd,
+	// 				}.Layout(
+	// 					samplingWindowGtx,
+	// 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+	// 						return _form.render(gtx)
+	// 					}),
+	// 				)
+	// 				windowEventType.Frame(samplingWindowGtx.Ops)
+	// 			case system.DestroyEvent:
+
+	// 				newSamplingWindowDone <- false
+
+	// 			}
+	// 		}
+	// 	}(newSamplingWindowDone)
+	// 	newSamplingWindowDisplayed = <-newSamplingWindowDone
+
+	// }
 }
 
 func newSamplingField(gtx layout.Context) layout.Dimensions {

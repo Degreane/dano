@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"reflect"
+	"time"
 
 	"gioui.org/layout"
 	"gioui.org/op/clip"
@@ -13,25 +14,26 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
-	"github.com/degreane/dano/utils/binding"
 	"github.com/degreane/dano/utils/names"
 )
 
 type ToolbarItemType interface {
-	widget.Label | *widget.Label | widget.Clickable | *widget.Clickable | widget.Editor | *widget.Editor | material.CheckBoxStyle
+	widget.Label | *widget.Label | widget.Clickable | *widget.Clickable | widget.Editor | *widget.Editor | material.CheckBoxStyle | layout.FlexChild
 }
 
 type ToolBarItem struct {
-	Id       string
-	Type     interface{}
-	Text     string
-	Disabled bool
-	Bound    binding.Boundable
+	Id         string
+	Type       interface{}
+	Text       string
+	Disabled   bool
+	Bound      func()
+	bound      interface{}
+	boundValue interface{}
 }
 
 func NewToolbarItem[T ToolbarItemType](w *T, txt string) *ToolBarItem {
-	Id := rand.Intn(100000000)
-	IdStr := names.GetName(Id, "")
+	Id := rand.Int63n(time.Now().UnixNano())
+	IdStr := names.GetName(int(Id), "")
 	return &ToolBarItem{
 		Id:       IdStr,
 		Type:     w,
@@ -52,11 +54,26 @@ func (t *ToolBarItem) ToggleState() *ToolBarItem {
 	t.Disabled = !t.Disabled
 	return t
 }
-func (t *ToolBarItem) Bind(b binding.String) {
-	t.Bound = binding.NewBound(t, func() {
-		log.Printf("A New Boundable of Widget %+v bound to value %s\n", t.Text, b.TryGet())
-	})
-	b.Register(t)
+func (t *ToolBarItem) Bind(b interface{}, fn func()) {
+	// when we are binding to a value we use the following:
+	// set the Bound to a newBound of type Boundable interface
+
+	// log.Printf("Binding %+v \n", t)
+	t.bound = b
+	t.Bound = fn
+	bType := reflect.ValueOf(b).MethodByName("Register")
+	// log.Printf("binding bType \n\t%+v\n", bType)
+	ins := make([]reflect.Value, 1)
+	ins[0] = reflect.ValueOf(t)
+	bType.Call(ins)
+	// b.Register(t)
+}
+
+func (t *ToolBarItem) Bounded(nValue interface{}) {
+	log.Printf("[ToolBarItem Bounded]\n\t%+v\n", t)
+	t.boundValue = nValue
+	t.Bound()
+
 }
 
 type ToolBar struct {
@@ -133,10 +150,10 @@ func (tb *ToolBar) render(gtx layout.Context, th *material.Theme) layout.Dimensi
 		layout.Stacked(
 			func(gtx layout.Context) layout.Dimensions {
 				return layout.Inset{
-					Top:    unit.Dp(1),
-					Bottom: unit.Dp(1),
-					Left:   unit.Dp(1),
-					Right:  unit.Dp(1),
+					Top:    unit.Dp(2),
+					Bottom: unit.Dp(2),
+					Left:   unit.Dp(2),
+					Right:  unit.Dp(2),
 				}.Layout(
 					gtx,
 					func(gtx layout.Context) layout.Dimensions {
@@ -173,7 +190,17 @@ func (tb *ToolBar) render(gtx layout.Context, th *material.Theme) layout.Dimensi
 								flexitems = append(flexitems, layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 									return layout.Inset{Top: 1, Bottom: 1, Left: 1, Right: 1}.Layout(gtx, mat.Layout)
 								}))
+							case reflect.TypeOf(&layout.FlexChild{}):
+								// log.Printf(" FlexChild is % +v \n", tbi.Type)
+								fChild, ok := tbi.Type.(*layout.FlexChild)
+								if ok {
+									flexitems = append(flexitems, *fChild)
+								} else {
+									log.Printf("Non FChild %+v \n", fChild)
+								}
+
 							default:
+								log.Printf("Default is %+v %+v", tbi.Type, reflect.TypeOf(tbi.Type))
 								flexitems = append(flexitems, layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 									return material.Label(th, unit.Sp(20), "Label Here").Layout(gtx)
 								}))

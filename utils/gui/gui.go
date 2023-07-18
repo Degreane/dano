@@ -21,6 +21,7 @@ func InitGUI() {
 			app.Title("Dano Master Thesis (2023)"),
 			app.Size(unit.Dp(800), unit.Dp(600)),
 		)
+		initFirstToolBarItems(theme)
 		if err := renderMainWindow(); err != nil {
 			log.Fatal(err)
 		}
