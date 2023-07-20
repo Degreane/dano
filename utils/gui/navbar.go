@@ -55,85 +55,6 @@ func initFirstToolBarItems(th *material.Theme) {
 		}
 	})
 }
-
-// func renderTopBar(et system.FrameEvent, gtx layout.Context) layout.FlexChild {
-// 	_color := theme.Palette.ContrastBg
-// 	_color.A = 128
-// 	r2 := layout.Rigid(
-// 		func(gtx layout.Context) layout.Dimensions {
-
-// 			dims := widget.Border{
-// 				Width:        unit.Dp(1),
-// 				Color:        _color,
-// 				CornerRadius: unit.Dp(5),
-// 			}.Layout(
-// 				gtx,
-// 				func(gtx layout.Context) layout.Dimensions {
-
-// 					newBtnStyle = material.Button(theme, &newBtnState, "New")
-// 					loadBtnStyle = material.Button(theme, &loadBtnState, "Load")
-// 					saveBtnStyle = material.Button(theme, &saveBtnState, "Save")
-// 					quitBtnStyle = material.Button(theme, &quitBtnState, "Quit")
-// 					return layout.UniformInset(unit.Dp(10)).Layout(
-// 						gtx,
-// 						func(gtx layout.Context) layout.Dimensions {
-// 							return layout.Flex{
-// 								Axis:      layout.Horizontal,
-// 								Spacing:   layout.SpaceEnd,
-// 								Alignment: layout.Start,
-// 							}.Layout(gtx,
-// 								spaceW(unit.Dp(20)),
-// 								layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-// 									return newBtnStyle.Layout(gtx)
-// 								}),
-// 								spaceW(unit.Dp(5)),
-// 								layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-// 									return loadBtnStyle.Layout(gtx)
-// 								}),
-// 								spaceW(unit.Dp(5)),
-// 								layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-// 									return saveBtnStyle.Layout(gtx)
-// 								}),
-// 								layout.Flexed(1.9, func(gtx layout.Context) layout.Dimensions {
-// 									return material.Label(theme, unit.Sp(20), "").Layout(gtx)
-// 								}),
-// 								layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-// 									var th *material.Theme = material.NewTheme(gofont.Regular())
-// 									th.Bg = color.NRGBA{R: 200, G: 200}
-// 									return quitBtnStyle.Layout(gtx.Disabled())
-// 								}),
-// 								spaceW(unit.Dp(20)),
-// 							)
-// 						},
-// 					)
-
-// 				},
-// 			)
-// 			_rect := clip.UniformRRect(image.Rect(0, 0, dims.Size.X, dims.Size.Y), 2).Op(gtx.Ops)
-
-//				paint.FillShape(gtx.Ops, _color, _rect)
-//				return dims
-//			},
-//		)
-//		if newBtnState.Clicked() {
-//			// nWindow := app.NewWindow(
-//			// 	app.Size(unit.Dp(600), unit.Dp(600)),
-//			// )
-//			// go func() {
-//			// 	for f := range nWindow.Events() {
-//			// 		switch ft := f.(type) {
-//			// 		case system.FrameEvent:
-//			// 			fmt.Println("FrameEvent SubWindow ")
-//			// 		case system.DestroyEvent:
-//			// 			fmt.Println(ft.Err)
-//			// 		}
-//			// 	}
-//			// }()
-//			//go drawMessage("new Sampling", "Adding New SamplingOf a very very \n Long Long file and text assumed inside \n Good Luck")
-//			go newSamplingGUI()
-//		}
-//		return r2
-//	}
 func renderNewToolbar(gtx layout.Context, th *material.Theme) layout.Dimensions {
 	// tb is the main toolbar.
 	tb := NewToolbar()
@@ -146,7 +67,6 @@ func renderNewToolbar(gtx layout.Context, th *material.Theme) layout.Dimensions 
 	if newBtnState.Clicked() {
 		tbItemNew.Disable()
 		newSamplingGUI()
-
 	}
 	// tbItemSave.Disable()
 	if quitBtnState.Clicked() {

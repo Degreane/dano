@@ -2,6 +2,7 @@ package gui
 
 import (
 	"image/color"
+	"log"
 	"strconv"
 
 	"gioui.org/app"
@@ -108,18 +109,22 @@ func newSamplingGUI() {
 
 		go func() {
 			newSamplingWindow := app.NewWindow(
-				app.Title("New Sample"),
+				app.Title("New Batch Sample"),
 				app.Size(unit.Dp(600), unit.Dp(400)),
 			)
 			// define the fields we need:
 			var (
-				_form *Form = NewForm("NewBatch")
+				_form           *Form            = NewForm("NewBatch")
+				sampleClickable widget.Clickable = widget.Clickable{}
 			)
 
 			for windowEvent := range newSamplingWindow.Events() {
 
 				switch windowEventType := windowEvent.(type) {
 				case system.FrameEvent:
+					if sampleClickable.Clicked() {
+						log.Println("Clickable Clicked")
+					}
 					samplingWindowGtx := layout.NewContext(samplingWindowOps, windowEventType)
 					layout.Flex{
 						Axis:    layout.Vertical,
@@ -127,7 +132,12 @@ func newSamplingGUI() {
 					}.Layout(
 						samplingWindowGtx,
 						layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+							log.Println("!st", gtx.Constraints)
 							return _form.render(gtx)
+						}),
+						layout.Flexed(0.01, func(gtx layout.Context) layout.Dimensions {
+							log.Println("2nd", gtx.Constraints)
+							return material.Button(theme, &sampleClickable, "Sample Clickable").Layout(samplingWindowGtx)
 						}),
 					)
 					windowEventType.Frame(samplingWindowGtx.Ops)
