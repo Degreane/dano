@@ -66,6 +66,7 @@ func renderNewToolbar(gtx layout.Context, th *material.Theme) layout.Dimensions 
 
 	if newBtnState.Clicked() {
 		tbItemNew.Disable()
+		tbItemLoad.Disable()
 		newSamplingGUI()
 	}
 	// tbItemSave.Disable()
