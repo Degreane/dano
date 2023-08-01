@@ -28,22 +28,7 @@ const (
 )
 
 var (
-	newSamplingWindowDisplayed bool      = false
-	newSamplingWindowDone      chan bool = make(chan bool, 1)
-
 	newSamplinWindowBinding binding.Boolean = binding.NewBoolean()
-	// newSamplingBatchNameBinding      binding.String  = binding.NewString()
-	// newSamplingBatchInfoBinding      binding.String  = binding.NewString()
-	// newSamplingBatchThresholdBinding binding.String  = binding.NewString()
-	// newSamplingBatchPrecisionBinding binding.String  = binding.NewString()
-
-	newSamplingBatchNameState      widget.Editor = widget.Editor{}
-	newSamplingBatchInfoState      widget.Editor = widget.Editor{}
-	newSamplingBatchPrecisionState widget.Editor = widget.Editor{}
-	newSamplingBatchThresholdState widget.Editor = widget.Editor{}
-
-	// newFlexSubContainer2  layout.Flex
-
 )
 
 func newSamplingGUI() {
@@ -210,9 +195,6 @@ func newSamplingGUI() {
 			_cntr0.Add(c1).Add(c2).Add(_cntr1.SetPadding(&layout.Inset{}).SetMargin(&layout.Inset{})).Add(_cntrSubmit)
 
 			_cntr.Add(_cntr0)
-
-			_newSamplingBatchInfo := NewFormItem[widget.Editor](&newSamplingBatchInfoState, "Info").SetMultiLine(true).SetFilter("")
-			_newSamplingBatchInfo.SetHint("Batch Information")
 			for windowEvent := range newSamplingWindow.Events() {
 
 				switch windowEventType := windowEvent.(type) {
