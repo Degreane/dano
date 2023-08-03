@@ -1,12 +1,11 @@
 package gui
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"log"
 	"regexp"
-
-	"fmt"
 
 	"gioui.org/app"
 	"gioui.org/io/system"
@@ -15,16 +14,9 @@ import (
 	"gioui.org/text"
 	"gioui.org/unit"
 	"gioui.org/widget"
-	"github.com/degreane/dano/utils/binding"
-)
 
-const (
-	Alpha          = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	AlphaNumeric   = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	AlphaSmall     = "abcdefghijklmnopqrstuvwxyz"
-	AlphaCapital   = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	Numeric        = "0123456789"
-	NumericDecimal = "0123456789."
+	"github.com/degreane/dano/utils/binding"
+	"github.com/degreane/dano/utils/gui/widgets"
 )
 
 var (
@@ -50,15 +42,15 @@ func newSamplingGUI() {
 		go func() {
 			newSamplingWindow := app.NewWindow(
 				app.Title("New Batch Sampling"),
-				app.Size(unit.Dp(800), unit.Dp(600)),
+				app.Size(unit.Dp(400), unit.Dp(300)),
 			)
 			newSamplingWindow.Option(func(m unit.Metric, c *app.Config) {
-				c.Size = image.Pt(800, 600)
+				c.Size = image.Pt(400, 300)
 			})
 			// define the fields we need:
 			var (
 				// _form *Form = NewForm("NewBatch")
-				_cntr              *Container
+				_cntr              *widgets.Container
 				_batchName         *widget.Editor    = new(widget.Editor)
 				_batchInfo         *widget.Editor    = new(widget.Editor)
 				_batchPrecision    *widget.Editor    = new(widget.Editor)
@@ -73,7 +65,7 @@ func newSamplingGUI() {
 				}
 			)
 
-			_cntr0 := NewContainer[layout.Flex](&layout.Flex{}).SetAxis(
+			_cntr0 := widgets.NewContainer[layout.Flex](&layout.Flex{}).SetAxis(
 				layout.Vertical,
 			).SetBorder(
 				&widget.Border{
@@ -85,7 +77,7 @@ func newSamplingGUI() {
 					Width:        unit.Dp(0),
 				},
 			).SetBackgroundColor(_ColorWhite)
-			_cntr1 := NewContainer[layout.Flex](&layout.Flex{}).SetAxis(
+			_cntr1 := widgets.NewContainer[layout.Flex](&layout.Flex{}).SetAxis(
 				layout.Horizontal,
 			).SetBorder(
 				&widget.Border{
@@ -97,7 +89,7 @@ func newSamplingGUI() {
 					Width:        unit.Dp(0),
 				},
 			).SetBackgroundColor(_ColorWhite)
-			_cntr = NewContainer[layout.Flex](&layout.Flex{}).SetAxis(
+			_cntr = widgets.NewContainer[layout.Flex](&layout.Flex{}).SetAxis(
 				layout.Vertical,
 			).SetBorder(
 				&widget.Border{
@@ -131,7 +123,7 @@ func newSamplingGUI() {
 				A: 25,
 			}).SetSpacing(layout.SpaceEnd)
 
-			_cntrSubmit := NewContainer[layout.Flex](&layout.Flex{}).SetAxis(
+			_cntrSubmit := widgets.NewContainer[layout.Flex](&layout.Flex{}).SetAxis(
 				layout.Horizontal,
 			).SetBorder(
 				&widget.Border{
@@ -143,9 +135,10 @@ func newSamplingGUI() {
 					Width:        unit.Dp(0),
 				},
 			)
-			c1 := NewContainerItem[widget.Editor](
+			c1 := widgets.NewContainerItem[widget.Editor](
 				_batchName,
 				"Batch Name",
+				*theme,
 			).SetWidgetHint(
 				"new batch name",
 			).SetWidgetTextAlign(
@@ -153,16 +146,17 @@ func newSamplingGUI() {
 			).SetWidgetMultiLine(
 				false,
 			).SetWidgetFilter(AlphaNumeric)
-			c2 := NewContainerItem[widget.Editor](_batchInfo, "Information").SetWidgetHint(
+			c2 := widgets.NewContainerItem[widget.Editor](_batchInfo, "Information", *theme).SetWidgetHint(
 				"new Batch Information",
 			).SetWidgetMultiLine(
 				true,
 			).SetWidgetTextAlign(
 				text.Start,
 			).SetWidgetFilter("")
-			c3 := NewContainerItem[widget.Editor](
+			c3 := widgets.NewContainerItem[widget.Editor](
 				_batchPrecision,
 				"Precision",
+				*theme,
 			).SetwidgetText(
 				"2",
 			).SetWidgetFilter(
@@ -174,9 +168,10 @@ func newSamplingGUI() {
 			).SetWidgetHint(
 				"Precision (Default 2.0)",
 			)
-			c4 := NewContainerItem[widget.Editor](
+			c4 := widgets.NewContainerItem[widget.Editor](
 				_batchThreshold,
 				"Threshold",
+				*theme,
 			).SetWidgetFilter(
 				NumericDecimal,
 			).SetwidgetText(
@@ -189,7 +184,7 @@ func newSamplingGUI() {
 				"Threshold (default 3.0)",
 			)
 
-			submitContainerBtnItem := NewContainerItem[widget.Clickable](_batchSubmitButton, "Submit")
+			submitContainerBtnItem := widgets.NewContainerItem[widget.Clickable](_batchSubmitButton, "Submit", *theme)
 			_cntrSubmit.Add(submitContainerBtnItem.Disable())
 			_cntr1.Add(c3).Add(c4).SetBackgroundColor(color.NRGBA{G: 128, A: 128})
 			_cntr0.Add(c1).Add(c2).Add(_cntr1.SetPadding(&layout.Inset{}).SetMargin(&layout.Inset{})).Add(_cntrSubmit)
@@ -200,11 +195,11 @@ func newSamplingGUI() {
 				switch windowEventType := windowEvent.(type) {
 				case system.FrameEvent:
 					samplingWindowGtx := layout.NewContext(samplingWindowOps, windowEventType)
-					c4.Call(func(c *ContainerItem) *ContainerItem {
+					c4.Call(func(c *widgets.ContainerItem) *widgets.ContainerItem {
 
 						_filter := regexp.MustCompile(`^[0-9]+(\.)?([0-9]+)?$`)
 						_dot := regexp.MustCompile(`\.`)
-						_widget := c.widget.(*widget.Editor)
+						_widget := c.Widget().(*widget.Editor)
 						_widgetBytes := []byte(_widget.Text())
 						if len(_widgetBytes) > 0 {
 							if !_filter.Match(_widgetBytes) {
@@ -231,6 +226,9 @@ func newSamplingGUI() {
 						submitContainerBtnItem.Disable()
 					} else {
 						submitContainerBtnItem.Enable()
+						tbItemName.SetLabel(c1.GetValue())
+						tbItemPrecision.SetwidgetText(c3.GetValue())
+
 					}
 					_cntr.Render(samplingWindowGtx)
 					// log.Println("Dimensions are <", _cntr.Dims, ">")

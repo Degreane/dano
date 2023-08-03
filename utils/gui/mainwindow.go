@@ -6,6 +6,8 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
+
+	"github.com/degreane/dano/utils/gui/widgets"
 )
 
 func renderMainWindow() error {
@@ -53,7 +55,7 @@ func renderMainWindow() error {
 						})
 					},
 				),
-				spaceW(10),
+				widgets.SpaceW(10),
 			)
 
 			et.Frame(gtx.Ops)
