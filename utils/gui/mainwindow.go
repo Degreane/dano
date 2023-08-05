@@ -37,6 +37,11 @@ func renderMainWindow() error {
 						return renderSecondToolbar(gtx, th)
 					},
 				),
+				layout.Rigid(
+					func(gtx layout.Context) layout.Dimensions {
+						return renderThirdToolbar(gtx, th)
+					},
+				),
 				layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
 					return layout.Dimensions{
 						Size: gtx.Constraints.Min,

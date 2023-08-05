@@ -16,11 +16,10 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
-
 )
 
 type ContainerItemType interface {
-	*widget.Editor | widget.Editor | *widget.Clickable | widget.Clickable | *widget.Bool | *widget.Label | widget.Label | *widget.Float | material.LabelStyle
+	*widget.Editor | widget.Editor | *widget.Clickable | widget.Clickable | *widget.Bool | *widget.Label | widget.Label | *widget.Float | material.LabelStyle | layout.FlexChild | *layout.FlexChild
 }
 type ContainerItemLayout uint
 
@@ -31,7 +30,7 @@ const (
 
 // ContainerItem contains a widget that returns a layout.dimension
 //
-// It has a Label
+// # It has a Label
 //
 // # TODO Introduce Label Decoration, with getters and setters
 //
@@ -191,8 +190,10 @@ func (ci *ContainerItem) renderWidget(gtx layout.Context) layout.Dimensions {
 		_max = r.Size
 	} else if ci.widgetType == "*widget.Clickable" {
 		w := ci.widget.(*widget.Clickable)
-		ci.theme.TextSize = unit.Sp(10)
+		ci.theme.TextSize = unit.Sp(ci.theme.TextSize)
 		r = material.Button(&ci.theme, w, ci.label).Layout(gtx)
+		_max = r.Size
+		log.Println("We Have a Max of <", _max, ">")
 	}
 	_callOps := _macro.Stop()
 	_ops := new(op.Ops)
@@ -270,18 +271,33 @@ func (ci *ContainerItem) Render(oGtx layout.Context) layout.Dimensions {
 			),
 		)
 	} else if ci.widgetType == "*widget.Clickable" {
-		dims = l.Layout(
-			gtx,
-			layout.Flexed(
-				100,
-				func(gtx layout.Context) layout.Dimensions {
-					return layout.UniformInset(unit.Dp(5)).Layout(
-						gtx,
-						ci.renderWidget,
-					)
-				},
-			),
-		)
+		if ci.flexed {
+			dims = l.Layout(
+				gtx,
+				layout.Flexed(
+					100,
+					func(gtx layout.Context) layout.Dimensions {
+						return layout.UniformInset(unit.Dp(5)).Layout(
+							gtx,
+							ci.renderWidget,
+						)
+					},
+				),
+			)
+		} else {
+			dims = l.Layout(
+				gtx,
+				layout.Rigid(
+					func(gtx layout.Context) layout.Dimensions {
+						return layout.UniformInset(unit.Dp(5)).Layout(
+							gtx,
+							ci.renderWidget,
+						)
+					},
+				),
+			)
+		}
+
 	} else if ci.widgetType == "*widget.Label" {
 		dims = l.Layout(
 			gtx,
@@ -307,6 +323,27 @@ func (ci *ContainerItem) Render(oGtx layout.Context) layout.Dimensions {
 				},
 			),
 		)
+	} else if ci.widgetType == "*layout.FlexChild" {
+		if ci.flexed {
+			dims = l.Layout(
+				gtx,
+				layout.Flexed(
+					100,
+					func(gtx layout.Context) layout.Dimensions {
+						return layout.Spacer{}.Layout(gtx)
+					},
+				),
+			)
+		} else {
+			dims = l.Layout(
+				gtx,
+				layout.Rigid(
+					func(gtx layout.Context) layout.Dimensions {
+						return layout.Spacer{}.Layout(gtx)
+					},
+				),
+			)
+		}
 	}
 
 	// log.Println("Container Item Dims  <", dims, ">")

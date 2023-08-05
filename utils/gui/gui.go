@@ -8,6 +8,7 @@ import (
 	"gioui.org/font/gofont"
 	"gioui.org/unit"
 	"gioui.org/widget/material"
+
 )
 
 var (
@@ -26,6 +27,7 @@ func InitGUI() {
 		theme.TextSize = unit.Sp(11)
 		initFirstToolBarItems(theme)
 		initSecondToolBar(theme)
+		initThirdToolBar(theme)
 		if err := renderMainWindow(); err != nil {
 			log.Fatal(err)
 		}

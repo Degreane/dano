@@ -13,10 +13,13 @@ import (
 	"github.com/degreane/dano/utils/gui/widgets"
 )
 
+// defining Operations
 var (
-	// defining Operations
 	ops op.Ops
-	// defining First NavBar Widgets
+)
+
+// defining First NavBar Widgets
+var (
 	newBtnState      widget.Clickable
 	loadBtnState     widget.Clickable
 	saveBtnState     widget.Clickable
@@ -27,7 +30,10 @@ var (
 	tbItemLoad       *widgets.ToolBarItem
 	tbItemFlexSpacer *widgets.ToolBarItem
 	tbItemQuit       *widgets.ToolBarItem
-	// defining Second NavBar Widgets
+)
+
+// defining Second NavBar Widgets
+var (
 	sampleName      widget.Label
 	sampleInfo      widget.Editor
 	samplePrecision widget.Editor
@@ -36,8 +42,22 @@ var (
 	tbItemInfo      *widgets.ContainerItem
 	tbItemPrecision *widgets.ContainerItem
 	tbItemThreshold *widgets.ContainerItem
+)
 
-	// defining bindings
+// third toolbar items:
+//
+// 1- Should display batch number of nodes.
+//
+// 2- Button to add new node Automatically or manually
+var (
+	sampleCount               widget.Editor
+	sampleNewNode             widget.Clickable
+	tbItemSampleCount         *widgets.ContainerItem
+	tbItemSampleNewNodeButton *widgets.ContainerItem
+)
+
+// defining bindings
+var (
 	batchLoaded binding.Boolean = binding.NewBoolean()
 	batchSaved  binding.Boolean = binding.NewBoolean()
 )
@@ -75,6 +95,10 @@ func initSecondToolBar(th *material.Theme) {
 	tbItemThreshold = widgets.NewContainerItem[widget.Editor](&sampleThreshold, "Threshold", *th).Disable()
 	tbItemInfo = widgets.NewContainerItem[widget.Editor](&sampleInfo, "Info", *th).Disable().SetWidgetMultiLine(true).SetLabel("Info")
 }
+func initThirdToolBar(th *material.Theme) {
+	tbItemSampleCount = widgets.NewContainerItem[widget.Editor](&sampleCount, "count", *th).SetWidgetFilter(Numeric)
+	tbItemSampleNewNodeButton = widgets.NewContainerItem[widget.Clickable](&sampleNewNode, "Add", *th).Flexed(true)
+}
 func renderNewToolbar(gtx layout.Context, th *material.Theme) layout.Dimensions {
 	// tb is the main toolbar.
 	tb := widgets.NewToolbar()
@@ -98,7 +122,7 @@ func renderNewToolbar(gtx layout.Context, th *material.Theme) layout.Dimensions 
 }
 func renderSecondToolbar(gtx layout.Context, th *material.Theme) layout.Dimensions {
 	tb := widgets.NewContainer[layout.Flex](&layout.Flex{})
-	clr := theme.Bg
+	clr := th.Bg
 	clr.A = 128
 	tb.Add(tbItemName.SetWidgetTextAlign(text.Middle)).Add(tbItemPrecision.SetWidgetTextAlign(text.Middle)).Add(tbItemThreshold).Add(tbItemInfo).SetMargin(&layout.Inset{
 		Top:    0,
@@ -106,5 +130,15 @@ func renderSecondToolbar(gtx layout.Context, th *material.Theme) layout.Dimensio
 		Left:   1,
 		Right:  1,
 	}).SetBackgroundColor(clr)
+	return tb.Render(gtx)
+}
+
+func renderThirdToolbar(gtx layout.Context, th *material.Theme) layout.Dimensions {
+	tb := widgets.NewContainer[layout.Flex](&layout.Flex{}).SetAlign(layout.Middle)
+	// tbItemSpacer := widgets.NewContainerItem[layout.FlexChild](&layout.FlexChild{}, "", *th)
+
+	clr := th.Bg
+	clr.A = 128
+	tb.Add(tbItemSampleCount).Add(tbItemSampleNewNodeButton).SetBackgroundColor(clr)
 	return tb.Render(gtx)
 }

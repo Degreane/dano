@@ -2,9 +2,7 @@ package gui
 
 import (
 	"fmt"
-	"image"
 	"image/color"
-	"log"
 	"regexp"
 
 	"gioui.org/app"
@@ -42,11 +40,11 @@ func newSamplingGUI() {
 		go func() {
 			newSamplingWindow := app.NewWindow(
 				app.Title("New Batch Sampling"),
-				app.Size(unit.Dp(400), unit.Dp(300)),
+				app.Size(unit.Dp(500), unit.Dp(300)),
 			)
-			newSamplingWindow.Option(func(m unit.Metric, c *app.Config) {
-				c.Size = image.Pt(400, 300)
-			})
+			// newSamplingWindow.Option(func(m unit.Metric, c *app.Config) {
+			// 	c.Size = image.Pt(400, 300)
+			// })
 			// define the fields we need:
 			var (
 				// _form *Form = NewForm("NewBatch")
@@ -135,6 +133,7 @@ func newSamplingGUI() {
 					Width:        unit.Dp(0),
 				},
 			)
+			//C1 is the batch Name Container Item
 			c1 := widgets.NewContainerItem[widget.Editor](
 				_batchName,
 				"Batch Name",
@@ -146,6 +145,7 @@ func newSamplingGUI() {
 			).SetWidgetMultiLine(
 				false,
 			).SetWidgetFilter(AlphaNumeric)
+			// C2 is the batch Information Container Item
 			c2 := widgets.NewContainerItem[widget.Editor](_batchInfo, "Information", *theme).SetWidgetHint(
 				"new Batch Information",
 			).SetWidgetMultiLine(
@@ -153,6 +153,8 @@ func newSamplingGUI() {
 			).SetWidgetTextAlign(
 				text.Start,
 			).SetWidgetFilter("")
+
+			// C3 is the Batch Precision Container Item
 			c3 := widgets.NewContainerItem[widget.Editor](
 				_batchPrecision,
 				"Precision",
@@ -168,6 +170,8 @@ func newSamplingGUI() {
 			).SetWidgetHint(
 				"Precision (Default 2.0)",
 			)
+
+			// C4 is the Batch Threshold Container Item
 			c4 := widgets.NewContainerItem[widget.Editor](
 				_batchThreshold,
 				"Threshold",
@@ -183,20 +187,17 @@ func newSamplingGUI() {
 			).SetWidgetHint(
 				"Threshold (default 3.0)",
 			)
-
+			// submitContainerBtnItem is the submit Button Container Item
 			submitContainerBtnItem := widgets.NewContainerItem[widget.Clickable](_batchSubmitButton, "Submit", *theme)
 			_cntrSubmit.Add(submitContainerBtnItem.Disable())
 			_cntr1.Add(c3).Add(c4).SetBackgroundColor(color.NRGBA{G: 128, A: 128})
 			_cntr0.Add(c1).Add(c2).Add(_cntr1.SetPadding(&layout.Inset{}).SetMargin(&layout.Inset{})).Add(_cntrSubmit)
-
 			_cntr.Add(_cntr0)
 			for windowEvent := range newSamplingWindow.Events() {
-
 				switch windowEventType := windowEvent.(type) {
 				case system.FrameEvent:
 					samplingWindowGtx := layout.NewContext(samplingWindowOps, windowEventType)
 					c4.Call(func(c *widgets.ContainerItem) *widgets.ContainerItem {
-
 						_filter := regexp.MustCompile(`^[0-9]+(\.)?([0-9]+)?$`)
 						_dot := regexp.MustCompile(`\.`)
 						_widget := c.Widget().(*widget.Editor)
@@ -216,11 +217,18 @@ func newSamplingGUI() {
 								}
 							}
 						} // should implement decoration of the containerItem
-
 						return c
 					})
 					if _batchSubmitButton.Clicked() {
-						log.Println("Value of <", c1.GetValue(), ">")
+						tbItemNew.Enable()
+						tbItemSave.Enable()
+						tbItemLoad.Disable()
+						tbItemInfo.SetwidgetText(c2.GetValue())
+						tbItemName.SetwidgetText(c1.GetValue())
+						tbItemPrecision.SetwidgetText(c3.GetValue())
+						tbItemThreshold.SetwidgetText(c4.GetValue())
+						// newSamplingWindow.Perform(system.Action(system.RTL))
+						newSamplingWindow.Perform(system.ActionClose)
 					}
 					if len(c1.GetValue()) == 0 {
 						submitContainerBtnItem.Disable()
@@ -228,7 +236,6 @@ func newSamplingGUI() {
 						submitContainerBtnItem.Enable()
 						tbItemName.SetLabel(c1.GetValue())
 						tbItemPrecision.SetwidgetText(c3.GetValue())
-
 					}
 					_cntr.Render(samplingWindowGtx)
 					// log.Println("Dimensions are <", _cntr.Dims, ">")
@@ -236,10 +243,8 @@ func newSamplingGUI() {
 				case system.DestroyEvent:
 
 					newSamplinWindowBinding.Set(false)
-
 				}
 			}
 		}()
 	}
-
 }
