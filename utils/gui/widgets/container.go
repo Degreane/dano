@@ -3,10 +3,12 @@
 package widgets
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"log"
 	"reflect"
+	"regexp"
 
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -16,10 +18,11 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
+
 )
 
 type ContainerItemType interface {
-	*widget.Editor | widget.Editor | *widget.Clickable | widget.Clickable | *widget.Bool | *widget.Label | widget.Label | *widget.Float | material.LabelStyle | layout.FlexChild | *layout.FlexChild
+	*widget.Editor | widget.Editor | *widget.Clickable | widget.Clickable | *widget.Bool | widget.Bool | *widget.Label | widget.Label | *widget.Float | material.LabelStyle | layout.FlexChild | *layout.FlexChild
 }
 type ContainerItemLayout uint
 
@@ -27,6 +30,30 @@ const (
 	itemHorizontal ContainerItemLayout = iota
 	itemVertical
 )
+
+// FloatEditor Actually enforces the containerItem Editor Widget to only accept floating numbers
+func FloatEditor(c *ContainerItem) *ContainerItem {
+	_filter := regexp.MustCompile(`^[0-9]+(\.)?([0-9]+)?$`)
+	_dot := regexp.MustCompile(`\.`)
+	_widget := c.Widget().(*widget.Editor)
+	_widgetBytes := []byte(_widget.Text())
+	if len(_widgetBytes) > 0 {
+		if !_filter.Match(_widgetBytes) {
+			loc := _dot.FindIndex(_widgetBytes)
+			_widgetBytes = _dot.ReplaceAll(_widgetBytes, []byte{})
+			_newStr := fmt.Sprintf("%s%s%s", _widgetBytes[:loc[0]], []byte{'.'}, _widgetBytes[loc[0]:])
+			// log.Println("Regexp Index is <", loc, ">")
+			_, _caretPos := _widget.CaretPos()
+			_widget.SetText(_newStr)
+			if len(_widget.Text()) > _caretPos && _caretPos > 0 {
+				_widget.SetCaret(_caretPos-1, _caretPos)
+			} else {
+				_widget.SetCaret(len(_widget.Text()), len(_widget.Text()))
+			}
+		}
+	}
+	return c
+}
 
 // ContainerItem contains a widget that returns a layout.dimension
 //
@@ -47,6 +74,14 @@ type ContainerItem struct {
 	hint            string
 	disabled        bool
 	theme           material.Theme
+	labelDecoration struct {
+		backgroundColor color.NRGBA
+		foregroundColor color.NRGBA
+		pad             layout.Inset
+		align           layout.Alignment
+		margin          layout.Inset
+		border          widget.Border
+	}
 }
 
 func NewContainerItem[T ContainerItemType](w *T, lbl string, theme material.Theme) *ContainerItem {
@@ -75,9 +110,10 @@ func NewContainerItem[T ContainerItemType](w *T, lbl string, theme material.Them
 	}
 	return cnt
 }
+
+
 func (ci *ContainerItem) Call(fn func(c *ContainerItem) *ContainerItem) *ContainerItem {
 	return fn(ci)
-	// return ci
 }
 func (ci *ContainerItem) SetWidgetHint(hint string) *ContainerItem {
 	ci.hint = hint
@@ -122,6 +158,8 @@ func (ci *ContainerItem) GetValue() string {
 		return ci.widget.(*widget.Editor).Text()
 	} else if ci.widgetType == "*widget.Label" {
 		return ci.label
+	} else if ci.widgetType == "*widget.Bool" {
+		return fmt.Sprintf("%t", ci.widget.(*widget.Bool).Value)
 	}
 	return ""
 }
@@ -193,7 +231,9 @@ func (ci *ContainerItem) renderWidget(gtx layout.Context) layout.Dimensions {
 		ci.theme.TextSize = unit.Sp(ci.theme.TextSize)
 		r = material.Button(&ci.theme, w, ci.label).Layout(gtx)
 		_max = r.Size
-		log.Println("We Have a Max of <", _max, ">")
+		// log.Println("We Have a Max of <", _max, ">")
+	} else {
+		log.Println("Getting  <", ci.widgetType, ">")
 	}
 	_callOps := _macro.Stop()
 	_ops := new(op.Ops)
@@ -220,7 +260,7 @@ func (ci *ContainerItem) renderWidget(gtx layout.Context) layout.Dimensions {
 	_callOps.Add(gtx.Ops)
 	return r
 }
-func (ci *ContainerItem) Flexed(flexed bool) *ContainerItem {
+func (ci *ContainerItem) SetFlexed(flexed bool) *ContainerItem {
 	ci.flexed = flexed
 	return ci
 }
@@ -344,6 +384,15 @@ func (ci *ContainerItem) Render(oGtx layout.Context) layout.Dimensions {
 				),
 			)
 		}
+	} else if ci.widgetType == "*widget.Bool" {
+		dims = l.Layout(
+			gtx,
+			layout.Rigid(
+				func(gtx layout.Context) layout.Dimensions {
+					return material.CheckBox(&ci.theme, ci.widget.(*widget.Bool), ci.label).Layout(gtx)
+				},
+			),
+		)
 	}
 
 	// log.Println("Container Item Dims  <", dims, ">")
@@ -407,7 +456,7 @@ func NewContainer[T ContainerType](lout *T) *Container {
 	decorationBorder := &widget.Border{
 		Color:        color.NRGBA{A: 255},
 		CornerRadius: unit.Dp(5),
-		Width:        unit.Dp(2),
+		Width:        unit.Dp(1),
 	}
 	decorationMargin := &layout.Inset{
 		Top:    unit.Dp(5),

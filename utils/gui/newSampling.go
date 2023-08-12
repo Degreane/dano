@@ -1,9 +1,7 @@
 package gui
 
 import (
-	"fmt"
 	"image/color"
-	"regexp"
 
 	"gioui.org/app"
 	"gioui.org/io/system"
@@ -189,7 +187,7 @@ func newSamplingGUI() {
 			)
 			// submitContainerBtnItem is the submit Button Container Item
 			submitContainerBtnItem := widgets.NewContainerItem[widget.Clickable](_batchSubmitButton, "Submit", *theme)
-			_cntrSubmit.Add(submitContainerBtnItem.Disable())
+			_cntrSubmit.Add(submitContainerBtnItem.SetFlexed(true).Disable())
 			_cntr1.Add(c3).Add(c4).SetBackgroundColor(color.NRGBA{G: 128, A: 128})
 			_cntr0.Add(c1).Add(c2).Add(_cntr1.SetPadding(&layout.Inset{}).SetMargin(&layout.Inset{})).Add(_cntrSubmit)
 			_cntr.Add(_cntr0)
@@ -197,28 +195,7 @@ func newSamplingGUI() {
 				switch windowEventType := windowEvent.(type) {
 				case system.FrameEvent:
 					samplingWindowGtx := layout.NewContext(samplingWindowOps, windowEventType)
-					c4.Call(func(c *widgets.ContainerItem) *widgets.ContainerItem {
-						_filter := regexp.MustCompile(`^[0-9]+(\.)?([0-9]+)?$`)
-						_dot := regexp.MustCompile(`\.`)
-						_widget := c.Widget().(*widget.Editor)
-						_widgetBytes := []byte(_widget.Text())
-						if len(_widgetBytes) > 0 {
-							if !_filter.Match(_widgetBytes) {
-								loc := _dot.FindIndex(_widgetBytes)
-								_widgetBytes = _dot.ReplaceAll(_widgetBytes, []byte{})
-								_newStr := fmt.Sprintf("%s%s%s", _widgetBytes[:loc[0]], []byte{'.'}, _widgetBytes[loc[0]:])
-								// log.Println("Regexp Index is <", loc, ">")
-								_, _caretPos := _widget.CaretPos()
-								_widget.SetText(_newStr)
-								if len(_widget.Text()) > _caretPos && _caretPos > 0 {
-									_widget.SetCaret(_caretPos-1, _caretPos)
-								} else {
-									_widget.SetCaret(len(_widget.Text()), len(_widget.Text()))
-								}
-							}
-						} // should implement decoration of the containerItem
-						return c
-					})
+					c4.Call(widgets.FloatEditor)
 					if _batchSubmitButton.Clicked() {
 						tbItemNew.Enable()
 						tbItemSave.Enable()
@@ -228,6 +205,8 @@ func newSamplingGUI() {
 						tbItemPrecision.SetwidgetText(c3.GetValue())
 						tbItemThreshold.SetwidgetText(c4.GetValue())
 						// newSamplingWindow.Perform(system.Action(system.RTL))
+						tbItemSampleCount.SetwidgetText("0")
+						tbItemSampleNewNodeButton.Enable()
 						newSamplingWindow.Perform(system.ActionClose)
 					}
 					if len(c1.GetValue()) == 0 {

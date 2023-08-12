@@ -20,11 +20,12 @@ func InitGUI() {
 	go func() {
 		w = app.NewWindow(
 			app.Title("Dano Master Thesis (2023)"),
-			// app.Size(unit.Dp(400), unit.Dp(300)),
-			app.Fullscreen.Option(),
+			// app.Size(unit.Dp(1000), unit.Dp(600)),
+			// app.Maximized.Option(),
+			// app.Fullscreen.Option(),
 		)
 
-		theme.TextSize = unit.Sp(11)
+		theme.TextSize = unit.Sp(10)
 		initFirstToolBarItems(theme)
 		initSecondToolBar(theme)
 		initThirdToolBar(theme)

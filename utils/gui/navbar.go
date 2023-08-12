@@ -96,8 +96,9 @@ func initSecondToolBar(th *material.Theme) {
 	tbItemInfo = widgets.NewContainerItem[widget.Editor](&sampleInfo, "Info", *th).Disable().SetWidgetMultiLine(true).SetLabel("Info")
 }
 func initThirdToolBar(th *material.Theme) {
-	tbItemSampleCount = widgets.NewContainerItem[widget.Editor](&sampleCount, "count", *th).SetWidgetFilter(Numeric)
-	tbItemSampleNewNodeButton = widgets.NewContainerItem[widget.Clickable](&sampleNewNode, "Add", *th).Flexed(true)
+	tbItemSampleCount = widgets.NewContainerItem[widget.Editor](&sampleCount, "count", *th).SetWidgetFilter(Numeric).SetWidgetTextAlign(text.Middle).Disable()
+	tbItemSampleNewNodeButton = widgets.NewContainerItem[widget.Clickable](&sampleNewNode, "Add", *th).SetFlexed(true).Disable()
+
 }
 func renderNewToolbar(gtx layout.Context, th *material.Theme) layout.Dimensions {
 	// tb is the main toolbar.
@@ -134,11 +135,19 @@ func renderSecondToolbar(gtx layout.Context, th *material.Theme) layout.Dimensio
 }
 
 func renderThirdToolbar(gtx layout.Context, th *material.Theme) layout.Dimensions {
-	tb := widgets.NewContainer[layout.Flex](&layout.Flex{}).SetAlign(layout.Middle)
+	tb := widgets.NewContainer[layout.Flex](&layout.Flex{}).SetAlign(layout.Middle).SetMargin(&layout.Inset{
+		Top:    0,
+		Bottom: 1,
+		Left:   1,
+		Right:  1,
+	})
 	// tbItemSpacer := widgets.NewContainerItem[layout.FlexChild](&layout.FlexChild{}, "", *th)
 
 	clr := th.Bg
 	clr.A = 128
 	tb.Add(tbItemSampleCount).Add(tbItemSampleNewNodeButton).SetBackgroundColor(clr)
+	if tbItemSampleNewNodeButton.Widget().(*widget.Clickable).Clicked() {
+		newNodesWindowGUI(th)
+	}
 	return tb.Render(gtx)
 }
